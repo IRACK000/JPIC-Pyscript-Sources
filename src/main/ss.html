@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>File System Access API Examples</title>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+      <style>
+      .button {
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 5px 22px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      This example shows how to call the File System Access APIs. These APIs permit local file system access.
+    </p>
+    <div id="output"></div>
+    <br />
+    <button class="button" type="button" id="file_save">Write Local File</button>
+    <br />
+    <br />
+    <h4>File Contents:</h4>
+    <textarea id="content" name="content" rows="10" cols="80">
+Place data here to save to a local file.
+</textarea>
+    <py-script output="output">
+import asyncio
+import sys
+from js import alert, document, Object, window
+from pyodide import create_proxy, to_js
+
+async def file_save(event):
+	# Note: print() does not work in event handlers
+
+	try:
+		options = {
+			"startIn": "documents",
+			"suggestedName": "testfile.txt"
+		}
+
+		fileHandle = await window.showSaveFilePicker(Object.fromEntries(to_js(options)))
+	except Exception as e:
+		console.log('Exception: ' + str(e))
+		return
+
+	content = document.getElementById("content").value
+
+	file = await fileHandle.createWritable()
+	await file.write(content)
+	await file.close()
+	return
+
+def setup_button():
+	# Create a Python proxy for the callback function
+	file_save_proxy = create_proxy(file_save)
+
+	# Set the listener to the callback
+	document.getElementById("file_save").addEventListener("click", file_save_proxy, False)
+
+setup_button()
+    </py-script>
+  </body>
+</html>
